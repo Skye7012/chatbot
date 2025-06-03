@@ -1,2 +1,5 @@
 streamlit
-openai
+Pillow
+numpy
+torch
+torchvision
