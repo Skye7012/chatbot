@@ -38,7 +38,7 @@ def stylize_image(image, model):
 if uploaded_file is not None:
     # Показываем загруженное изображение
     image = Image.open(uploaded_file)
-    st.image(image, caption="Ваше фото", use_column_width=True)
+    st.image(image, caption="Ваше фото", use_container_width=True)
 
     # Кнопка для обработки
     if st.button("Преобразовать в стиль " + style):
@@ -50,7 +50,7 @@ if uploaded_file is not None:
 
             # Стилизуем изображение
             stylized_image = stylize_image(image, model)
-            st.image(stylized_image, caption=f"Стиль: {style}", use_column_width=True)
+            st.image(stylized_image, caption=f"Стиль: {style}", use_container_width=True)
 
         except Exception as e:
             st.error(f"Ошибка: {e}")
