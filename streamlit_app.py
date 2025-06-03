@@ -27,3 +27,10 @@ if uploaded_file is not None:
         # Имитация работы: просто инвертируем цвета для примера
         inverted_image = Image.fromarray(255 - np.array(image))
         st.image(inverted_image, caption=f"Стиль: {style}", use_column_width=True)
+
+    feedback = st.text_area("Ваши отзывы о стилизации")
+    if st.button('Отправить отзыв'):
+        # Сохраните отзыв в файл или базу данных
+        with open('feedback.txt', 'a') as f:
+            f.write(feedback + '\n')
+        st.success('Спасибо за ваш отзыв!')
