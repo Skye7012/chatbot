@@ -16,11 +16,13 @@ style = st.selectbox(
 # Загрузка изображения
 uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"])
 
+
 @st.cache_resource
 def load_model():
     """Загружаем предобученную модель AnimeGANv2 из torchhub"""
     model = torch.hub.load('bryandlee/animegan2-pytorch', 'generator').eval()
     return model
+
 
 def stylize_image(image, model):
     """Применяем стилизацию"""
@@ -34,6 +36,7 @@ def stylize_image(image, model):
     output_image = output.squeeze().permute(1, 2, 0).numpy()
     output_image = np.clip(output_image, 0, 1)
     return (output_image * 255).astype(np.uint8)
+
 
 if uploaded_file is not None:
     # Показываем загруженное изображение
@@ -50,14 +53,20 @@ if uploaded_file is not None:
 
             # Стилизуем изображение
             stylized_image = stylize_image(image, model)
-            st.image(stylized_image, caption=f"Стиль: {style}", use_container_width=True)
+            st.image(stylized_image,
+                     caption=f"Стиль: {style}", use_container_width=True)
+
+            # Показываем форму для отзыва только после успешного преобразования
+            st.subheader("Понравился результат?")
+            feedback = st.text_area("Оставьте ваш отзыв о стилизации:")
+            if st.button('Отправить отзыв'):
+                if feedback:  # Проверяем, что отзыв не пустой
+                    with open('feedback.txt', 'a') as f:
+                        f.write(f"Стиль: {style}\nОтзыв: {feedback}\n\n")
+                    st.success('Спасибо за ваш отзыв!')
+                else:
+                    st.warning("Пожалуйста, напишите отзыв перед отправкой")
 
         except Exception as e:
             st.error(f"Ошибка: {e}")
             st.warning("Попробуйте другое изображение.")
-
-    feedback = st.text_area("Ваши отзывы о стилизации")
-    if st.button('Отправить отзыв'):
-        with open('feedback.txt', 'a') as f:
-            f.write(feedback + '\n')
-        st.success('Спасибо за ваш отзыв!')
