@@ -3,25 +3,12 @@ from PIL import Image
 import numpy as np
 import torch
 from torchvision import transforms
-import streamlit as st
 from st_supabase_connection import SupabaseConnection
 
 # Заголовок приложения
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
 
-# Initialize connection.
-conn = st.connection("supabase",type=SupabaseConnection)
- 
-# Perform query.
-rows = conn.table("Feedback").select("*").execute()
-print(rows)
-st.error(rows)
-
-# Print results.
-for row in rows.data:
-    st.write(f"{row['name']} has a :{row['pet']}:")
-
-# Выбор стиля (независимо от этого будет преобразовано в аниме)
+# Выбор стиля
 style = st.selectbox(
     "Выберите стиль художника:",
     ("Ван Гог", "Мунк", "Пикассо", "Моне")
@@ -52,35 +39,50 @@ def stylize_image(image, model):
     return (output_image * 255).astype(np.uint8)
 
 
+# Используем session_state для сохранения состояния
+if 'processed' not in st.session_state:
+    st.session_state.processed = False
+if 'feedback_sent' not in st.session_state:
+    st.session_state.feedback_sent = False
+
 if uploaded_file is not None:
     # Показываем загруженное изображение
     image = Image.open(uploaded_file)
     st.image(image, caption="Ваше фото", use_container_width=True)
 
     # Кнопка для обработки
-    if st.button("Преобразовать в стиль " + style):
+    if not st.session_state.processed and st.button("Преобразовать в стиль " + style):
+        st.session_state.processed = True
+        st.session_state.feedback_sent = False
+
         st.write("⏳ Идёт обработка...")
-
         try:
-            # Загружаем модель (кешируем, чтобы не грузить каждый раз)
             model = load_model()
-
-            # Стилизуем изображение
-            stylized_image = stylize_image(image, model)
-            st.image(stylized_image,
-                     caption=f"Стиль: {style}", use_container_width=True)
-
-            # Показываем форму для отзыва только после успешного преобразования
-            st.subheader("Понравился результат?")
-            feedback = st.text_area("Оставьте ваш отзыв о стилизации:")
-            if st.button('Отправить отзыв'):
-                if feedback:  # Проверяем, что отзыв не пустой
-                    with open('feedback.txt', 'a') as f:
-                        f.write(f"Стиль: {style}\nОтзыв: {feedback}\n\n")
-                    st.success('Спасибо за ваш отзыв!')
-                else:
-                    st.warning("Пожалуйста, напишите отзыв перед отправкой")
-
+            st.session_state.stylized_image = stylize_image(image, model)
         except Exception as e:
             st.error(f"Ошибка: {e}")
             st.warning("Попробуйте другое изображение.")
+            st.session_state.processed = False
+
+    if st.session_state.processed and 'stylized_image' in st.session_state:
+        st.image(st.session_state.stylized_image,
+                 caption=f"Стиль: {style}", use_container_width=True)
+
+        # Форма для отзыва
+        if not st.session_state.feedback_sent:
+            st.subheader("Понравился результат?")
+            feedback = st.text_area("Оставьте ваш отзыв о стилизации:")
+
+            if st.button('Отправить отзыв'):
+                if feedback:
+                    try:
+                        conn = st.connection(
+                            "supabase", type=SupabaseConnection)
+                        response = conn.table("Feedback").insert(
+                            {"rating": 1, "comment": feedback}).execute()
+                        st.success('Спасибо за ваш отзыв!')
+                        st.session_state.feedback_sent = True
+                    except Exception as e:
+                        st.error(f"Ошибка при отправке отзыва: {e}")
+                else:
+                    st.warning("Пожалуйста, напишите отзыв перед отправкой")
