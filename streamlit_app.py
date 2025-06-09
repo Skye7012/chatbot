@@ -3,9 +3,23 @@ from PIL import Image
 import numpy as np
 import torch
 from torchvision import transforms
+import streamlit as st
+from st_supabase_connection import SupabaseConnection
 
 # Заголовок приложения
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
+
+# Initialize connection.
+conn = st.connection("supabase",type=SupabaseConnection)
+ 
+# Perform query.
+rows = conn.table("Feedback").select("*").execute()
+print(rows)
+st.error(rows)
+
+# Print results.
+for row in rows.data:
+    st.write(f"{row['name']} has a :{row['pet']}:")
 
 # Выбор стиля (независимо от этого будет преобразовано в аниме)
 style = st.selectbox(
