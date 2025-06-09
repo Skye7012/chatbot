@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torchvision import transforms
 from st_supabase_connection import SupabaseConnection
+from streamlit_star_rating import st_star_rating
 
 # Заголовок приложения
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
@@ -44,6 +45,8 @@ if 'processed' not in st.session_state:
     st.session_state.processed = False
 if 'feedback_sent' not in st.session_state:
     st.session_state.feedback_sent = False
+if 'rating' not in st.session_state:
+    st.session_state.rating = 0
 
 if uploaded_file is not None:
     # Показываем загруженное изображение
@@ -54,6 +57,7 @@ if uploaded_file is not None:
     if not st.session_state.processed and st.button("Преобразовать в стиль " + style):
         st.session_state.processed = True
         st.session_state.feedback_sent = False
+        st.session_state.rating = 0
 
         st.write("⏳ Идёт обработка...")
         try:
@@ -71,18 +75,29 @@ if uploaded_file is not None:
         # Форма для отзыва
         if not st.session_state.feedback_sent:
             st.subheader("Понравился результат?")
-            feedback = st.text_area("Оставьте ваш отзыв о стилизации:")
+
+            # Рейтинг в виде 10 звёзд
+            st.write("Оцените результат (от 1 до 10 звёзд):")
+
+            stars = st_star_rating(label="", maxValue=10, defaultValue=8, key="rating")
+
+            # Поле для комментария (опциональное)
+            comment = st.text_area(
+                "Ваш комментарий (необязательно):", key="comment")
 
             if st.button('Отправить отзыв'):
-                if feedback:
+                if st.session_state.rating > 0:
                     try:
                         conn = st.connection(
                             "supabase", type=SupabaseConnection)
-                        response = conn.table("Feedback").insert(
-                            {"rating": 1, "comment": feedback}).execute()
+                        response = conn.table("Feedback").insert({
+                            "rating": stars,
+                            "comment": comment if comment else None
+                        }).execute()
+
                         st.success('Спасибо за ваш отзыв!')
                         st.session_state.feedback_sent = True
                     except Exception as e:
                         st.error(f"Ошибка при отправке отзыва: {e}")
                 else:
-                    st.warning("Пожалуйста, напишите отзыв перед отправкой")
+                    st.warning("Пожалуйста, поставьте оценку")
