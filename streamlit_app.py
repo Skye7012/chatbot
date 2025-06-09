@@ -14,7 +14,7 @@ style = st.selectbox(
 )
 
 # Загрузка изображения
-uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"])
 
 @st.cache_resource
 def load_model():
