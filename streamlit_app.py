@@ -1,10 +1,8 @@
 import streamlit as st
 from PIL import Image
-import numpy as np
-import torch
-from torchvision import transforms
 from streamlit_star_rating import st_star_rating
 from supabase_client import SupabaseClient
+from model_utils import load_model, stylize_image
 
 # Заголовок приложения
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
@@ -19,30 +17,11 @@ st.badge(f"⭐ Средняя оценка модели: {avg_rating}/10", color
 # Выбор стиля
 style = st.selectbox(
     "Выберите стиль художника:",
-    ("Ван Гог", "Мунк", "Пикассо", "Моне")
+    ("Ван Гог", "Мунк", "Пикассо")
 )
 
 # Загрузка изображения
 uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"])
-
-@st.cache_resource
-def load_model():
-    """Загружаем предобученную модель AnimeGANv2 из torchhub"""
-    model = torch.hub.load('bryandlee/animegan2-pytorch', 'generator').eval()
-    return model
-
-def stylize_image(image, model):
-    """Применяем стилизацию"""
-    preprocess = transforms.Compose([
-        transforms.Resize(256),
-        transforms.ToTensor(),
-    ])
-    input_tensor = preprocess(image).unsqueeze(0)
-    with torch.no_grad():
-        output = model(input_tensor)
-    output_image = output.squeeze().permute(1, 2, 0).numpy()
-    output_image = np.clip(output_image, 0, 1)
-    return (output_image * 255).astype(np.uint8)
 
 # Используем session_state для сохранения состояния
 if 'processed' not in st.session_state:
@@ -82,10 +61,12 @@ if uploaded_file is not None:
 
             # Рейтинг в виде 10 звёзд
             st.write("Оцените результат (от 1 до 10 звёзд):")
-            stars = st_star_rating(label="", maxValue=10, defaultValue=8, key="rating")
+            stars = st_star_rating(label="", maxValue=10,
+                                   defaultValue=8, key="rating")
 
             # Поле для комментария (опциональное)
-            comment = st.text_area("Ваш комментарий (необязательно):", key="comment")
+            comment = st.text_area(
+                "Ваш комментарий (необязательно):", key="comment")
 
             if st.button('Отправить отзыв'):
                 if stars > 0:
