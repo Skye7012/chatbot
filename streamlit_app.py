@@ -24,7 +24,7 @@ def get_average_rating():
 
 # Отображаем среднюю оценку в правом верхнем углу
 avg_rating = get_average_rating()
-st.sidebar.markdown(f"### ⭐ Средняя оценка: {avg_rating}/10")
+st.badge(f"⭐ Средняя оценка модели: {avg_rating}/10", color="gray")
 
 # Выбор стиля
 style = st.selectbox(
@@ -114,8 +114,6 @@ if uploaded_file is not None:
 
                         st.success('Спасибо за ваш отзыв!')
                         st.session_state.feedback_sent = True
-                        # Обновляем среднюю оценку после отправки нового отзыва
-                        st.experimental_rerun()
                     except Exception as e:
                         st.error(f"Ошибка при отправке отзыва: {e}")
                 else:
