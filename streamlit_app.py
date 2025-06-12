@@ -9,6 +9,23 @@ from streamlit_star_rating import st_star_rating
 # Заголовок приложения
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
 
+# Функция для получения средней оценки из базы данных
+def get_average_rating():
+    try:
+        conn = st.connection("supabase", type=SupabaseConnection)
+        result = conn.table("Feedback").select("rating.avg()").execute()
+        avg_rating = result.data[0]['avg']
+        if avg_rating:
+            return round(avg_rating, 2)
+        return 0
+    except Exception as e:
+        st.error(f"Ошибка при получении средней оценки: {e}")
+        return 0
+
+# Отображаем среднюю оценку в правом верхнем углу
+avg_rating = get_average_rating()
+st.sidebar.markdown(f"### ⭐ Средняя оценка: {avg_rating}/10")
+
 # Выбор стиля
 style = st.selectbox(
     "Выберите стиль художника:",
@@ -97,6 +114,8 @@ if uploaded_file is not None:
 
                         st.success('Спасибо за ваш отзыв!')
                         st.session_state.feedback_sent = True
+                        # Обновляем среднюю оценку после отправки нового отзыва
+                        st.experimental_rerun()
                     except Exception as e:
                         st.error(f"Ошибка при отправке отзыва: {e}")
                 else:
