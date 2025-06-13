@@ -21,7 +21,7 @@ style = st.selectbox(
 )
 
 # Загрузка изображения
-uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"])
+uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"], key="file_uploader")
 
 # Используем session_state для сохранения состояния
 if 'processed' not in st.session_state:
@@ -30,6 +30,17 @@ if 'feedback_sent' not in st.session_state:
     st.session_state.feedback_sent = False
 if 'rating' not in st.session_state:
     st.session_state.rating = 0
+if 'last_uploaded_file' not in st.session_state:
+    st.session_state.last_uploaded_file = None
+
+# Проверяем, изменилось ли загруженное изображение
+if uploaded_file != st.session_state.last_uploaded_file:
+    st.session_state.last_uploaded_file = uploaded_file
+    st.session_state.processed = False
+    st.session_state.feedback_sent = False
+    st.session_state.rating = 0
+    if 'stylized_image' in st.session_state:
+        del st.session_state.stylized_image
 
 if uploaded_file is not None:
     # Показываем загруженное изображение
