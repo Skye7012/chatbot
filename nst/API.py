@@ -36,7 +36,7 @@ def transfer_style(content_image, style_image, model_path):
 
     print("Loading pre-trained model...")
     # The hub.load() loads any TF Hub model
-    hub_module = hub.load(model_path)
+    hub_module = hub.load(model_path) 
 
     print("Generating stylized image now...wait a minute")
     # Stylize image.
