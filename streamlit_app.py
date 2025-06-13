@@ -17,7 +17,8 @@ st.badge(f"⭐ Средняя оценка модели: {avg_rating}/10", color
 # Выбор стиля
 style = st.selectbox(
     "Выберите стиль художника:",
-    ("Ван Гог", "Мунк", "Пикассо")
+    ("Ван Гог", "Мунк", "Пикассо"),
+    key="style_selectbox"  # Добавляем ключ для отслеживания изменений
 )
 
 # Загрузка изображения
@@ -31,10 +32,15 @@ if 'feedback_sent' not in st.session_state:
     st.session_state.feedback_sent = False
 if 'last_uploaded_file' not in st.session_state:
     st.session_state.last_uploaded_file = None
+if 'last_style' not in st.session_state:  # Добавляем отслеживание последнего стиля
+    st.session_state.last_style = style
 
-# Проверяем, изменилось ли загруженное изображение
-if uploaded_file != st.session_state.last_uploaded_file:
+# Проверяем, изменилось ли загруженное изображение ИЛИ стиль художника
+if (uploaded_file != st.session_state.last_uploaded_file or
+        style != st.session_state.last_style):
+
     st.session_state.last_uploaded_file = uploaded_file
+    st.session_state.last_style = style  # Обновляем последний выбранный стиль
     st.session_state.processed = False
     st.session_state.feedback_sent = False
     if 'stylized_image' in st.session_state:
