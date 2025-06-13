@@ -1,6 +1,6 @@
 streamlit
 Pillow
-numpy
+numpy=1.26
 torch
 torchvision
 st-supabase-connection
