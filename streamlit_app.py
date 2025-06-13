@@ -21,15 +21,14 @@ style = st.selectbox(
 )
 
 # Загрузка изображения
-uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"], key="file_uploader")
+uploaded_file = st.file_uploader("Загрузите ваше фото:", type=[
+                                 "jpg", "jpeg"], key="file_uploader")
 
 # Используем session_state для сохранения состояния
 if 'processed' not in st.session_state:
     st.session_state.processed = False
 if 'feedback_sent' not in st.session_state:
     st.session_state.feedback_sent = False
-if 'rating' not in st.session_state:
-    st.session_state.rating = 0
 if 'last_uploaded_file' not in st.session_state:
     st.session_state.last_uploaded_file = None
 
@@ -38,7 +37,6 @@ if uploaded_file != st.session_state.last_uploaded_file:
     st.session_state.last_uploaded_file = uploaded_file
     st.session_state.processed = False
     st.session_state.feedback_sent = False
-    st.session_state.rating = 0
     if 'stylized_image' in st.session_state:
         del st.session_state.stylized_image
 
@@ -51,16 +49,15 @@ if uploaded_file is not None:
     if not st.session_state.processed and st.button("Преобразовать в стиль " + style):
         st.session_state.processed = True
         st.session_state.feedback_sent = False
-        st.session_state.rating = 0
 
         st.write("⏳ Идёт обработка...")
         try:
-            style = {
+            style_image = {
                 "Ван Гог": "ван_гог.jpg", "Мунк": "мунк.jpg", "Пикассо": "пикассо.jpg"
             }[style]
-            # model = load_model()
+
             st.session_state.stylized_image = stylize_image(
-                image, style)
+                image, style_image)
         except Exception as e:
             st.error(f"Ошибка: {e}")
             st.warning("Попробуйте другое изображение.")
@@ -86,8 +83,8 @@ if uploaded_file is not None:
             if st.button('Отправить отзыв'):
                 if stars > 0:
                     if supabase.submit_feedback(stars, comment if comment else None):
-                       st.success('Спасибо за ваш отзыв!')
-                       st.session_state.feedback_sent = True
+                        st.success('Спасибо за ваш отзыв!')
+                        st.session_state.feedback_sent = True
                     pass
                 else:
                     st.warning("Пожалуйста, поставьте оценку")
