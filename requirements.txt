@@ -6,4 +6,5 @@ torchvision
 st-supabase-connection
 st-star-rating
 matplotlib
+tensorflow-cpu
 tensorflow-hub
