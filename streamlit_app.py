@@ -8,11 +8,11 @@ from model_utils import load_model, stylize_image
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
 
 # Инициализация клиента Supabase
-supabase = SupabaseClient()
+# supabase = SupabaseClient()
 
 # Отображаем среднюю оценку в правом верхнем углу
-avg_rating = supabase.get_average_rating()
-st.badge(f"⭐ Средняя оценка модели: {avg_rating}/10", color="gray")
+# avg_rating = supabase.get_average_rating()
+# st.badge(f"⭐ Средняя оценка модели: {avg_rating}/10", color="gray")
 
 # Выбор стиля
 style = st.selectbox(
@@ -22,6 +22,10 @@ style = st.selectbox(
 
 # Загрузка изображения
 uploaded_file = st.file_uploader("Загрузите ваше фото:", type=["jpg", "jpeg"])
+
+# if uploaded_file:
+#     with open(f'temp/{uploaded_file.name}', 'wb') as f:
+#         f.write(uploaded_file.getvalue())
 
 # Используем session_state для сохранения состояния
 if 'processed' not in st.session_state:
@@ -35,6 +39,8 @@ if uploaded_file is not None:
     # Показываем загруженное изображение
     image = Image.open(uploaded_file)
     st.image(image, caption="Ваше фото", use_container_width=True)
+    # image = Image.open(f'temp/{uploaded_file.name}')
+    # st.image(image, caption="Ваше фото")
 
     # Кнопка для обработки
     if not st.session_state.processed and st.button("Преобразовать в стиль " + style):
@@ -44,8 +50,12 @@ if uploaded_file is not None:
 
         st.write("⏳ Идёт обработка...")
         try:
-            model = load_model()
-            st.session_state.stylized_image = stylize_image(image, model)
+            style = {
+                "Ван Гог": "ван_гог.jpg", "Мунк": "мунк.jpg", "Пикассо": "пикассо.jpg"
+            }[style]
+            # model = load_model()
+            st.session_state.stylized_image = stylize_image(
+                image, style)
         except Exception as e:
             st.error(f"Ошибка: {e}")
             st.warning("Попробуйте другое изображение.")
@@ -53,7 +63,7 @@ if uploaded_file is not None:
 
     if st.session_state.processed and 'stylized_image' in st.session_state:
         st.image(st.session_state.stylized_image,
-                 caption=f"Стиль: {style}", use_container_width=True)
+                 caption=f"Стиль: {style}")
 
         # Форма для отзыва
         if not st.session_state.feedback_sent:
@@ -70,8 +80,9 @@ if uploaded_file is not None:
 
             if st.button('Отправить отзыв'):
                 if stars > 0:
-                    if supabase.submit_feedback(stars, comment if comment else None):
-                        st.success('Спасибо за ваш отзыв!')
-                        st.session_state.feedback_sent = True
+                    # if supabase.submit_feedback(stars, comment if comment else None):
+                    #    st.success('Спасибо за ваш отзыв!')
+                    #    st.session_state.feedback_sent = True
+                    pass
                 else:
                     st.warning("Пожалуйста, поставьте оценку")
