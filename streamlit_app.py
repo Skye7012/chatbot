@@ -2,7 +2,7 @@ import streamlit as st
 from PIL import Image
 from streamlit_star_rating import st_star_rating
 from supabase_client import SupabaseClient
-from model_utils import load_model, stylize_image
+from model_utils import stylize_image
 
 # Заголовок приложения
 st.title("🎨 AI-Художник: Генерация изображений в стиле художников")
@@ -18,7 +18,7 @@ st.badge(f"⭐ Средняя оценка модели: {avg_rating}/10", color
 style = st.selectbox(
     "Выберите стиль художника:",
     ("Ван Гог", "Мунк", "Пикассо"),
-    key="style_selectbox"  # Добавляем ключ для отслеживания изменений
+    key="style_selectbox"
 )
 
 # Загрузка изображения
@@ -32,7 +32,7 @@ if 'feedback_sent' not in st.session_state:
     st.session_state.feedback_sent = False
 if 'last_uploaded_file' not in st.session_state:
     st.session_state.last_uploaded_file = None
-if 'last_style' not in st.session_state:  # Добавляем отслеживание последнего стиля
+if 'last_style' not in st.session_state:
     st.session_state.last_style = style
 
 # Проверяем, изменилось ли загруженное изображение ИЛИ стиль художника
@@ -40,7 +40,7 @@ if (uploaded_file != st.session_state.last_uploaded_file or
         style != st.session_state.last_style):
 
     st.session_state.last_uploaded_file = uploaded_file
-    st.session_state.last_style = style  # Обновляем последний выбранный стиль
+    st.session_state.last_style = style
     st.session_state.processed = False
     st.session_state.feedback_sent = False
     if 'stylized_image' in st.session_state:
@@ -59,7 +59,7 @@ if uploaded_file is not None:
         st.write("⏳ Идёт обработка...")
         try:
             style_image = {
-                "Ван Гог": "ван_гог.jpg", "Мунк": "мунк.jpg", "Пикассо": "пикассо.jpg"
+                "Ван Гог": "artists/ван_гог.jpg", "Мунк": "artists/мунк.jpg", "Пикассо": "artists/пикассо.jpg"
             }[style]
 
             st.session_state.stylized_image = stylize_image(
